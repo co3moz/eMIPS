@@ -1,0 +1,13 @@
+A0 = 5
+A1 = A0
+
+IF (A0 == 5) THEN
+    A0 = 3
+END IF
+
+A1 += A0
+
+WHILE (A0 == 3) THEN
+
+
+END WHILE

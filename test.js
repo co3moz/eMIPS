@@ -28,13 +28,28 @@ function getRegisterBytes(register) {
 
 var count = 0;
 var prefixIF="J_COMP_IF_%id%";
+var prefixWHILE="J_COMP_WHILE_%id%";
 var ifId = 1;
-/*
-source = source.superReplace(/ /g, function() {
+var whileId = 1;
+
+source = source.superReplace(/[\t ]*WHILE *\(([\s\S]+?)\) *THEN/g, function(ops) {
+    var key = prefixWHILE.replace("%id%", whileId.toString());
+    whileId++;
+
+    return key + ":\nIF (" + ops + ") THEN";
 });
-*/
-source = source.superReplace(/[\t ]*IF *\( *(?:(?:([\w\d]+) *([>=<!]+) *([\w\d]+))|(?:(!)?([\w\d]+))) *\) *THEN/g, function(a, op, b, not, na) {
-    var key = prefixIF.replace("%id%", ifId++);
+
+source = source.superReplace(/[\t ]*END +WHILE/g, function() {
+    return "J " + prefixWHILE.replace("%id%", (--whileId).toString()) + "\nEND IF";
+});
+
+console.log(source);
+return;
+
+source = source.superReplace(/[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN/g, function(a, op, b, not, na) {
+    var key = prefixIF.replace("%id%", ifId.toString());
+    ifId++;
+
     if(na) {
         var num = null;
         na.superMatch(/^\s*(\d+)\s*$/, function (number) {
@@ -117,7 +132,7 @@ source = source.superReplace(/[\t ]*IF *\( *(?:(?:([\w\d]+) *([>=<!]+) *([\w\d]+
 });
 
 source = source.superReplace(/[\t ]*END +IF/g, function() {
-    return "\n" + prefixIF.replace("%id%", --ifId) + ":";
+    return "\n" + prefixIF.replace("%id%", (--ifId).toString()) + ":";
 });
 
 compile = source.superReplace(/^\s*([\w\d$]*)\s*([\+\-\*\\\/])?=\s*([\w\d +\-\*\\\/$]*)(?:\r\n|\n|\r|)$/gm, function(register, prefix, left) {
