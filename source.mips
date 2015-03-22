@@ -1,5 +1,7 @@
-ALIAS MY_DUTY = A0
+alias sayi = A0
+alias sonuc = V0
 
-WHILE () THEN
-    MY_DUTY = 5
-END WHILE
+sonuc = 0
+for (t0 = 0; t0 < sayi; t0 += 1) then
+    sonuc += t0
+end for
