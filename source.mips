@@ -1,3 +1,5 @@
+ALIAS MY_DUTY = A0
+
 WHILE () THEN
-    A0 = 5
+    MY_DUTY = 5
 END WHILE
