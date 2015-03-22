@@ -31,24 +31,51 @@ var prefixIF="J_COMP_IF_%id%";
 var prefixWHILE="J_COMP_WHILE_%id%";
 var ifId = 1;
 var whileId = 1;
+var stackIf = [];
+var stackWhile = [];
+var stackFor = [];
 
-source = source.superReplace(/[\t ]*WHILE *\(([\s\S]+?)\) *THEN/g, function(ops) {
+source = source.superReplace(/(?:[\t ]*FOR\s*\(\s*([\s\S]+?)\s*;\s*([\s\S]+?)\s*;\s*([\s\S]+?)\s*\)\s*THEN)|([\t ]*END\s+FOR)/g, function(a, b, c, end) {
+    if(end) {
+        return stackFor.pop() + "\nEND WHILE";
+    }
+
+    stackFor.push(c);
+    return a + "\nWHILE (" + b + ") THEN\n";
+});
+
+source = source.superReplace(/(?:[\t ]*WHILE *\(([\s\S]+?)\) *THEN)|([\t ]*END\s+WHILE)/g, function(ops, end) {
+    if(end) {
+        return "J " + stackWhile.pop().toString() + "\nEND IF";
+    }
+
     var key = prefixWHILE.replace("%id%", whileId.toString());
     whileId++;
+    stackWhile.push(key);
 
     return key + ":\nIF (" + ops + ") THEN";
 });
 
-source = source.superReplace(/[\t ]*END +WHILE/g, function() {
-    return "J " + prefixWHILE.replace("%id%", (--whileId).toString()) + "\nEND IF";
-});
 
-console.log(source);
-return;
+source = source.superReplace(/(?:[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN)|([\t ]*END\s+IF)|([\t ]*ELSE)/g, function(a, op, b, not, na, end, els) {
+    if(end) {
+        return "\n" + stackIf.pop().toString() + ":";
+    }
 
-source = source.superReplace(/[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN/g, function(a, op, b, not, na) {
+    if(els) {
+        var key = prefixIF.replace("%id%", ifId.toString());
+        ifId++;
+
+        var last =  stackIf.pop().toString()
+        stackIf.push(key);
+
+        return "J " + key + "\n" + last + ":";
+    }
+
     var key = prefixIF.replace("%id%", ifId.toString());
     ifId++;
+
+    stackIf.push(key);
 
     if(na) {
         var num = null;
@@ -98,16 +125,16 @@ source = source.superReplace(/[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\
                 return temp + "beq $AT, $" + b + ", " + key;
             case ">":
                 count++;
-                return temp + "SLT $AT, $" + b + ", $AT\nbeq $AT, $zero, " + key;
+                return temp + "slt $AT, $" + b + ", $AT\nbeq $AT, $zero, " + key;
             case "<":
                 count++;
-                return temp + "SLT $AT, $AT, $" + b + "\nbeq $AT, $zero, " + key;
+                return temp + "slt $AT, $AT, $" + b + "\nbeq $AT, $zero, " + key;
             case "<=":
                 count++;
-                return temp + "SLT $AT, $" + b + ", $AT\nbne $AT, $zero, " + key;
+                return temp + "slt $AT, $" + b + ", $AT\nbne $AT, $zero, " + key;
             case ">=":
                 count++;
-                return temp + "SLT $AT, $AT, $" + b + "\nbne $AT, $zero, " + key;
+                return temp + "slt $AT, $AT, $" + b + "\nbne $AT, $zero, " + key;
         }
     }
 
@@ -118,24 +145,22 @@ source = source.superReplace(/[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\
             return "beq $" + a + ", $" + b + ", " + key;
         case ">":
             count++;
-            return "SLT $AT, $" + b + ", $" + a + ",\nbeq $AT, $zero, " + key;
+            return "slt $AT, $" + b + ", $" + a + ",\nbeq $AT, $zero, " + key;
         case "<":
             count++;
-            return "SLT $AT, $" + a + ", $" + b + "\nbeq $AT, $zero, " + key;
+            return "slt $AT, $" + a + ", $" + b + "\nbeq $AT, $zero, " + key;
         case "<=":
             count++;
-            return "SLT $AT, $" + b + ", $" + a + ",\nbne $AT, $zero, " + key;
+            return "slt $AT, $" + b + ", $" + a + ",\nbne $AT, $zero, " + key;
         case ">=":
             count++;
-            return "SLT $AT, $" + a + ", $" + b + "\nbne $AT, $zero, " + key;
+            return "slt $AT, $" + a + ", $" + b + "\nbne $AT, $zero, " + key;
     }
 });
 
-source = source.superReplace(/[\t ]*END +IF/g, function() {
-    return "\n" + prefixIF.replace("%id%", (--ifId).toString()) + ":";
-});
 
-compile = source.superReplace(/^\s*([\w\d$]*)\s*([\+\-\*\\\/])?=\s*([\w\d +\-\*\\\/$]*)(?:\r\n|\n|\r|)$/gm, function(register, prefix, left) {
+
+compile = source.superReplace(/^[\t ]*([\w\d$]*)\s*([\+\-\*\\\/])?=\s*([\w\d +\-\*\\\/$]*)(?:\r\n|\n|\r|)$/gm, function(register, prefix, left) {
     var job = null;
 
     count++;

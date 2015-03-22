@@ -1,13 +1,17 @@
-A0 = 5
-A1 = A0
+;if a1==1
+IF (A1 == 1) THEN
+;A0 = 5
+    A0=5
+;else a1 != 1
+ELSE
+    ;if a2==2
+    IF (A2 == 2) THEN
 
-IF (A0 == 5) THEN
-    A0 = 3
+    ;else a2 != 2
+    ELSE
+
+    ;endif a2==2
+    ENDIF
+
+;endif a1==1
 END IF
-
-A1 += A0
-
-WHILE (A0 == 3) THEN
-
-
-END WHILE
