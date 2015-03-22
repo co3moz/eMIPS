@@ -1,17 +1,3 @@
-;if a1==1
-IF (A1 == 1) THEN
-;A0 = 5
-    A0=5
-;else a1 != 1
-ELSE
-    ;if a2==2
-    IF (A2 == 2) THEN
-
-    ;else a2 != 2
-    ELSE
-
-    ;endif a2==2
-    ENDIF
-
-;endif a1==1
-END IF
+WHILE () THEN
+    A0 = 5
+END WHILE

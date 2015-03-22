@@ -19,6 +19,7 @@ String.prototype.superMatch = function(regex, callback) {
     }
 };
 
+
 function getRegisterBytes(register) {
     switch (register) {
         case "$zero":
@@ -35,18 +36,37 @@ var stackIf = [];
 var stackWhile = [];
 var stackFor = [];
 
-source = source.superReplace(/(?:[\t ]*FOR\s*\(\s*([\s\S]+?)\s*;\s*([\s\S]+?)\s*;\s*([\s\S]+?)\s*\)\s*THEN)|([\t ]*END\s+FOR)/g, function(a, b, c, end) {
+source = source.superReplace(/(?:[\t ]*FOR\s*\(\s*([\s\S]*?)\s*;\s*([\s\S]*?)\s*;\s*([\s\S]*?)\s*\)\s*THEN)|([\t ]*END\s+FOR)/g, function(a, b, c, end) {
     if(end) {
+        if(stackFor.length == 0) {
+            throw new Error("You didn't create any for");
+        }
         return stackFor.pop() + "\nEND WHILE";
+    }
+
+    if(!a) {
+        a = "";
+    }
+
+    if(!b) {
+        b = "ZERO == 0";
+    }
+
+    if(!c) {
+        c = "";
     }
 
     stackFor.push(c);
     return a + "\nWHILE (" + b + ") THEN\n";
 });
 
-source = source.superReplace(/(?:[\t ]*WHILE *\(([\s\S]+?)\) *THEN)|([\t ]*END\s+WHILE)/g, function(ops, end) {
+source = source.superReplace(/(?:[\t ]*WHILE *\(([\s\S]*?)\) *THEN)|([\t ]*END\s+WHILE)/g, function(ops, end) {
     if(end) {
         return "J " + stackWhile.pop().toString() + "\nEND IF";
+    }
+
+    if(!ops) {
+        ops = "ZERO == 0";
     }
 
     var key = prefixWHILE.replace("%id%", whileId.toString());
@@ -57,19 +77,9 @@ source = source.superReplace(/(?:[\t ]*WHILE *\(([\s\S]+?)\) *THEN)|([\t ]*END\s
 });
 
 
-source = source.superReplace(/(?:[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN)|([\t ]*END\s+IF)|([\t ]*ELSE)/g, function(a, op, b, not, na, end, els) {
+source = source.superReplace(/(?:[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN)|([\t ]*END\s+IF)/g, function(a, op, b, not, na, end) {
     if(end) {
         return "\n" + stackIf.pop().toString() + ":";
-    }
-
-    if(els) {
-        var key = prefixIF.replace("%id%", ifId.toString());
-        ifId++;
-
-        var last =  stackIf.pop().toString()
-        stackIf.push(key);
-
-        return "J " + key + "\n" + last + ":";
     }
 
     var key = prefixIF.replace("%id%", ifId.toString());
