@@ -2,7 +2,12 @@ String.prototype.superReplace = function(regex, callback) {
     var temp = this;
     var output;
     while(output = regex.exec(this)) {
-        temp = temp.replace(output.shift(), callback.apply(null, output));
+        var what = output.shift();
+        var to = callback.apply(null, output);
+        
+        if(to != null) {
+            temp = temp.replace(what, to);
+        }
     }
     return temp;
 };
@@ -42,8 +47,12 @@ function eMips(source) {
         return "";
     });
 
-    source = source.superReplace(/[\t ]*JUMP\s*([\w\d]*)(?:\r\n|\r|\n)/g, function(where) {
-        return "J" + where;
+    source = source.superReplace(/[\t ]*JUMP\s*\(\s*([\w\d]*)\s*\)[ \t]*(?:\r\n|\r|\n)/gi, function(where) {
+        return "J USER_" + where.toUpperCase() + "\n";
+    });
+    
+    source = source.superReplace(/[\t ]*LOCATION\s*\(\s*([\w\d]*)\s*\) *(?:\r\n|\r|\n)/gi, function(where) {
+        return "USER_" + where.toUpperCase() + ":\n";
     });
 
     source = source.superReplace(/(?:[\t ]*FOR\s*\(\s*([\s\S]*?)\s*;\s*([\s\S]*?)\s*;\s*([\s\S]*?)\s*\)\s*THEN)|([\t ]*END\s+FOR)/gi, function(a, b, c, end) {
@@ -70,13 +79,20 @@ function eMips(source) {
         return a + "\nWHILE (" + b + ") THEN\n";
     });
 
-    source = source.superReplace(/(?:[\t ]*WHILE *\(([\s\S]*?)\) *THEN)|([\t ]*END\s+WHILE)/gi, function(ops, end) {
+    source = source.superReplace(/(?:[\t ]*WHILE\s*\(([\s\S]*?)\)\s*THEN)|([\t ]*END\s+WHILE)|(CONTINUE[ \t]*(?:\r\n|\r|\n))/gi, function(ops, end, cnt) {
         if(end) {
             return "J " + stackWhile.pop().toString() + "\nEND IF";
         }
 
         if(!ops) {
             ops = "ZERO == 0";
+        }
+        
+        if(cnt) {
+            var last = stackWhile.pop();
+            stackWhile.push(last);
+            
+            return "J " + last + "\n";
         }
 
         var key = prefixWHILE.replace("%id%", whileId.toString());
@@ -87,10 +103,11 @@ function eMips(source) {
     });
 
 
-    source = source.superReplace(/(?:[\t ]*IF\s\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN)|([\t ]*END\s+IF)/gi, function(a, op, b, not, na, end) {
+    source = source.superReplace(/(?:[\t ]*IF\s*\(\s*(?:(?:([\w\d]+)\s*([>=<!]+)\s*([\w\d]+))|(?:(!)?([\w\d]+)))\s*\)\s*THEN)|([\t ]*END\s+IF)/gi, function(a, op, b, not, na, end) {
         if(end) {
             return "\n" + stackIf.pop().toString() + ":";
         }
+        
 
         var key = prefixIF.replace("%id%", ifId.toString());
         ifId++;
@@ -199,7 +216,7 @@ function eMips(source) {
             }
 
             if(job == null) {
-                left.superMatch(/^\s*(\w\d+)\s*$/, function (register) {
+                left.superMatch(/^\s*([\w\d]+)\s*$/, function (register) {
                     job = ["move_prefix", register];
                 });
             }
@@ -222,7 +239,7 @@ function eMips(source) {
                 job = ["move", register];
             });
         }
-
+        
         switch (job[0]) {
             case "constant":
                 var i = job[1];
