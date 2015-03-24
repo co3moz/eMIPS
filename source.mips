@@ -4,7 +4,7 @@ alias return = v0
 alias result = s0
 
 begin main
-    a = 5576767786
+    a = 55767677
     b = 6
     call add
     result = return
