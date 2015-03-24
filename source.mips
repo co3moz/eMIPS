@@ -1,17 +1,16 @@
-alias sayi = A0
-alias sonuc = V0
-alias temp = T0
+alias a = a0
+alias b = a1
+alias return = v0
+alias result = s0
 
-sonuc = 0
-for (temp = 0; temp < sayi; temp += 1) then
-    sonuc += temp
-end for
+begin main
+    a = 5576767786
+    b = 6
+    call add
+    result = return
+end main
 
-alias count = A1
-for(;;count+=1) then
-    if(count > 10) then
-        jump(afterfor)
-    end if
-end for
-
-location(afterFor)
+begin add
+    return = a + b
+    jump(again)
+end add
