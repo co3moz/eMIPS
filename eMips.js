@@ -287,7 +287,7 @@
             if(prefix) {
                 if(job == null) {
                     left.superMatch(/([\w\d$]+)\s*([\+\-\*\\\/])\s*([\w\d$]+)/, function (a, op, b) {
-                        job = ["operator_prefix", a, op, b];
+                        job = ["operator_9prefix", a, op, b];
                     });
                 }
     
