@@ -2,8 +2,8 @@
 Easy MIPS Assemby Generator with Handif language.
 
 How about to enjoy machine code?
-
-``` c++
+ 
+``` fortran
 begin main
   alias [
     number1 = s0,
@@ -14,7 +14,7 @@ begin main
   number1 = 10
   number2 = 20
   
-  call add with number1 number2 to s2
+  call add with number1 number2 to result
 end main
 
 begin add
@@ -31,48 +31,17 @@ end add
 
 compiled to mips
 ``` basic
-li $A0, 10
-
-li $T0, 4
-bge $A0, $T0, IF_S0
-move $A0, $A1
-J IF_S1
-IF_S0:
-li $A0, 2
-IF_S1:
-
-li $T0, 2
-beq $A0, $T0, NEXT
-J JP
-NEXT:
-li $A0, 4
-JP:
-```
-
-to mips direct
-``` basic
-lui $A0, 0
-ori $A0, $A0, 10
-
-lui $T0, 0
-ori $T0, $T0, 2
-
-slt $at, $A0, $T0
-beq $at, $zero, IF_S0
-
-add $A0, $A1, $zero
-J IF_S1
-IF_S0:
-lui $A0, 0
-ori $A0, $A0, 2
-IF_S1:
-
-lui $T0, 0
-ori $T0, $T0, 2
-beq $A0, $T0, NEXT
-J JP
-NEXT:
-lui $A0, 0
-ori $A0, $A0, 4
-JP:
+BGN_MAIN:                                                                                                                                                             
+addi $s0, $zero, 10                                                                                                                                                   
+addi $s1, $zero, 20                                                                                                                                                   
+add $a0, $zero, $s0                                                                                                                                                   
+add $a1, $zero, $s1                                                                                                                                                   
+jal BGN_ADD                                                                                                                                                           
+add $s2, $zero, $V0                                                                                                                                                   
+j EXIT_PROCESS                                                                                                                                                        
+BGN_ADD:                                                                                                                                                              
+add $t0, $a0, $a1                                                                                                                                                     
+add $v0, $zero, $temp                                                                                                                                                 
+jr $ra                                                                                                                                                                
+EXIT_PROCESS:    
 ```
