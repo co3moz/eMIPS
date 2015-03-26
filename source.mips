@@ -1,17 +1,23 @@
 begin main
-	alias [
-		sayi1 = s1,
-		sayi2 = s2
-	]
-	
-	sayi1 = 5
-	sayi2 = 10
-
-	call topla with sayi1 sayi2 to t1
-	
+  alias [
+    number1 = s0,
+    number2 = s1,
+    result =  s2
+  ]
+  
+  number1 = 10
+  number2 = 20
+  
+  call add with number1 number2 to result
 end main
 
-begin topla
-	temp = a0 + a1
-	return temp
-end topla
+begin add
+  alias [
+    temp = t0,
+    a = a0,
+    b = a1
+  ]
+  
+  temp = a + b
+  return temp
+end add

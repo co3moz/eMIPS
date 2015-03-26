@@ -1,26 +1,35 @@
-# eMIPS
-Enjoyable MIPS Code Generator
+# Handif to eMIPS
+Easy MIPS Assemby Generator with Handif language.
 
 How about to enjoy machine code?
 
-``` basic
-A0 = 10
-IF A0 >= 4 THEN
-  A0 = 2
-ELSE
-  A0 = A1
-ENDIF
+``` c++
+begin main
+  alias [
+    number1 = s0,
+    number2 = s1,
+    result =  s2
+  ]
+  
+  number1 = 10
+  number2 = 20
+  
+  call add with number1 number2 to s2
+end main
 
-
-IF A0 == 2 GO NEXT
-GO JP
-
-NEXT:
-A0 = 4
-JP:
+begin add
+  alias [
+    temp = t0,
+    a = a0,
+    b = a1
+  ]
+  
+  temp = a + b
+  return temp
+end add
 ``` 
 
-to mips pseudo supported
+compiled to mips
 ``` basic
 li $A0, 10
 
