@@ -1,16 +1,17 @@
-alias a = a0
-alias b = a1
-alias return = v0
-alias result = s0
-
 begin main
-    a = 55767677
-    b = 6
-    call add
-    result = return
+	alias [
+		sayi1 = s1,
+		sayi2 = s2
+	]
+	
+	sayi1 = 5
+	sayi2 = 10
+
+	call topla with sayi1 sayi2 to t1
+	
 end main
 
-begin add
-    return = a + b
-    jump(again)
-end add
+begin topla
+	temp = a0 + a1
+	return temp
+end topla

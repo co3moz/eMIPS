@@ -1,7 +1,7 @@
-var eMips = require("./eMips");
+var eMips = require("./libs/eMips");
 var fs = require("fs");
 
 var file = fs.readFileSync("source.mips");
-var mips = eMips.begin(file);
+var mips = eMips(file);
 
 console.log(mips);
