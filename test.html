@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>eMips with Handif test page</title>
+    <style>
+        html, body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        textarea {
+            width: 50%;
+            height: 100%;
+            background-color: black;
+            color: white;
+        }
+
+        div {
+            display: inline-block;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+    <textarea id="code"></textarea>
+    <div id="result"></div>
+</body>
+</html>
+
+<script>
+    var module = {};
+
+    function require(where, callback) {
+        var script = document.createElement("script");
+
+        script.type = "text/javascript";
+        script.src = where + ".js";
+        document.body.appendChild(script);
+
+        var changer = function() {
+            if(callback)  callback(module.exports);
+        };
+
+        script.onreadystatechange = changer;
+        script.onload = changer;
+    }
+
+    function LoadModule(object, module, balance) {
+        if(balance) {
+            require("modules/" + module, function(result) {
+                object[module] = result(object);
+            });
+        } else {
+            require("modules/" + module, function(result) {
+                object[module] = result;
+            });
+        }
+    }
+
+    require("includes/superMatch");
+    require("includes/superReplace");
+
+
+    var eMips = (function() {
+        LoadModule(eMips, "jump");
+        LoadModule(eMips, "location");
+        LoadModule(eMips, "cll");
+        LoadModule(eMips, "return");
+        LoadModule(eMips, "lineFixer");
+        LoadModule(eMips, "doublePointer");
+        LoadModule(eMips, "constantOperator");
+        LoadModule(eMips, "for");
+        LoadModule(eMips, "while");
+        LoadModule(eMips, "if");
+        LoadModule(eMips, "assignment");
+
+        LoadModule(eMips, "main", true);
+        LoadModule(eMips, "begin", true);
+
+        function eMips(source) {
+            return eMips.begin(source);
+        }
+
+        return eMips;
+    })();
+
+    var c = document.getElementById("code");
+    var r = document.getElementById("result");
+
+    c.onkeyup = function() {
+        try {
+            r.innerHTML = eMips(c.value).replace(/\n/g, "<br>");
+        } catch(e) {
+
+        }
+    };
+
+
+</script>
